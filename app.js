@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const path = require('path-posix');
 const mongoose = require('mongoose');
+const encrypt = require('mongoose-encryption');
 
 path.resolve(__dirname + 'foo');
 
@@ -11,6 +12,7 @@ const app = express();
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({
     extended: true
+    
 }));
 app.set('view engine', 'ejs');
 
@@ -50,6 +52,20 @@ app.post("/register", function (req, res) {
             res.render("secrets");
         }
     });
+});
+
+app.post("/login", function(req, res) {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    user.find({ email: username, password: password}, function( err, docs ) {
+        if (err) {
+            res.send(err);
+        } else if (docs) {
+            res.send(docs);
+        }
+});
+
 });
 
 let port = process.env.PORT;
