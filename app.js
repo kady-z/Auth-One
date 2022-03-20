@@ -4,7 +4,9 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const path = require('path-posix');
 const mongoose = require('mongoose');
-const md5 = require('js-md5');
+const session = require('express-session');
+const passport = require('passport');
+const passportLocalMongoose = require('passport-local-mongoose'); 
 
 path.resolve(__dirname + 'foo');
 
@@ -12,10 +14,18 @@ const app = express();
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({
-    extended: true
-    
+    extended: true    
 }));
 app.set('view engine', 'ejs');
+
+app.use(session({
+    secret: process.env.SECRET_KEY,
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 mongoose.connect('mongodb://localhost:27017/userDB', {
     useNewUrlParser: true
@@ -25,6 +35,8 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String 
 });
+
+userSchema.plugin(passportLocalMongoose);
 
 const user = new mongoose.model('User', userSchema);
 
@@ -41,40 +53,9 @@ app.get("/login", function (req, res) {
 });
 
 app.post("/register", function (req, res) {
-    const newUser= new user({
-        email: req.body.username,
-        password: md5(req.body.password)
-    });
-
-    newUser.save(function(err) {
-        if(err) {
-            res.send(err);
-        } else {
-            res.render("secrets");
-        }
-    });
 });
 
 app.post("/login", function(req, res) {
-    const username = req.body.username;
-    const password = md5(req.body.password);
-
-    user.findOne({ email: username }, function( err, user ) {
-        if (err) {
-            res.send(err);
-        } else {
-            if (user) {
-                if (user.password === password) {
-                    res.render("secrets");
-                } else {
-                    res.send("Wrong Password !!!");
-                }
-            } else {
-                res.send("User not found !!!");
-            }
-        }
-});
-
 });
 
 let port = process.env.PORT;
