@@ -30,6 +30,7 @@ app.use(passport.session());
 mongoose.connect('mongodb://localhost:27017/userDB', {
     useNewUrlParser: true
 });
+mongoose.set('useCreateIndex', true);
 
 const userSchema = new mongoose.Schema({
     email: String,
@@ -39,6 +40,10 @@ const userSchema = new mongoose.Schema({
 userSchema.plugin(passportLocalMongoose);
 
 const user = new mongoose.model('User', userSchema);
+
+passport.use(user.createStrategy());
+passport.serializeUser(user.serializeUser());
+passport.deserializeUser(user.deserializeUser());
 
 app.get("/", function (req, res) {
     res.render("home");
