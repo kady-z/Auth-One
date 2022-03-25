@@ -73,6 +73,9 @@ app.get("/login", function (req, res) {
     res.render("login");
 });
 
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ["profile"] }));
+
 app.get("/logout", function (req, res) {
     req.logout();
     res.redirect("/");
